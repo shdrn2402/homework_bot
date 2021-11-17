@@ -28,7 +28,7 @@ HOMEWORK_STATUSES = {
 
 
 def send_message(bot, message):
-    '''Отправка сообщения в телеграм.'''
+    """Отправка сообщения в телеграм."""
     try:
         bot.send_message(
             chat_id=TELEGRAM_CHAT_ID,
@@ -40,7 +40,7 @@ def send_message(bot, message):
 
 
 def get_api_answer(current_timestamp):
-    '''Запрос к api ENDPOINT.'''
+    """Запрос к api ENDPOINT."""
     timestamp = current_timestamp or int(time.time())
     params = {'from_date': timestamp}
     response = requests.get(ENDPOINT,
@@ -55,7 +55,7 @@ def get_api_answer(current_timestamp):
 
 
 def check_response(response):
-    '''Валидация ответа ENDPOINT.'''
+    """Валидация ответа ENDPOINT."""
     if not isinstance(response, dict):
         message = (
             'Формат ответа - не словарь. Проверьте запрос.')
@@ -78,7 +78,7 @@ def check_response(response):
 
 
 def parse_status(homework):
-    '''Определение статуса проверки проекта.'''
+    """Определение статуса проверки проекта."""
     homework_name = homework.get('homework_name')
     homework_status = homework.get('status')
     if homework_status not in HOMEWORK_STATUSES:
@@ -89,7 +89,7 @@ def parse_status(homework):
 
 
 def check_tokens():
-    '''Проверка наличия необходимых токенов.'''
+    """Проверка наличия необходимых токенов."""
     if not all((PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID)):
         return False
     return True
