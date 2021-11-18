@@ -4,7 +4,6 @@ import os
 import requests
 import telegram
 import time
-
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -43,36 +42,41 @@ def get_api_answer(current_timestamp):
     """Запрос к api ENDPOINT."""
     timestamp = current_timestamp or int(time.time())
     params = {'from_date': timestamp}
-    response = requests.get(ENDPOINT,
-                            headers=HEADERS,
-                            params=params)
-    if response.status_code != 200:
-        message = (f'Сбой в работе программы: Эндпоинт {ENDPOINT} недоступен.'
-                   f'Код ответа API: {response.status_code}')
+    try:
+        response = requests.get(ENDPOINT,
+                                headers=HEADERS,
+                                params=params)
+    except Exception as error:
+        message = f'Проблема с подключением: {error}'
         logging.error(message)
-        raise exc.NoResponseError
+    else:
+        if response.status_code != 200:
+            message = (f'Сбой в работе программы: '
+                       f'Эндпоинт {ENDPOINT} недоступен.'
+                       f'Код ответа API: {response.status_code}')
+            logging.error(message)
+            raise exc.NoResponseError
     return response.json()
 
 
 def check_response(response):
     """Валидация ответа ENDPOINT."""
+    if 'homeworks' not in response:
+        message = (
+            'В ответе сервера отсутсвует домашнее заданее. Проверьте запрос.')
+        logging.error(message)
+        raise exc.NoHomeworksError
+
     if not isinstance(response, dict):
         message = (
             'Формат ответа - не словарь. Проверьте запрос.')
         logging.error(message)
-        # raise exc.ResponseIsNotDictError
 
     if not isinstance(response['homeworks'], list):
         message = (
             'Формат домашних работ - не список. Проверьте запрос.')
         logging.error(message)
         raise exc.HomeworksNotInListError
-
-    if 'homeworks' not in response:
-        message = (
-            'В ответе сервера отсутсвует домашнее заданее. Проверьте запрос.')
-        logging.error(message)
-        raise exc.NoHomeworksError
 
     return response.get('homeworks')
 
@@ -81,7 +85,9 @@ def parse_status(homework):
     """Определение статуса проверки проекта."""
     homework_name = homework.get('homework_name')
     homework_status = homework.get('status')
-    if homework_status not in HOMEWORK_STATUSES:
+    if (homework_status not in HOMEWORK_STATUSES
+        ) or (homework_name is None
+              ) or (homework_status is None):
         message = 'Неизвестный статус домашней работы'
         logging.error(message)
     verdict = HOMEWORK_STATUSES[homework_status]
