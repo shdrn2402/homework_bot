@@ -65,11 +65,13 @@ def check_response(response):
         message = (
             'В ответе сервера отсутсвует домашнее заданее. Проверьте запрос.')
         logging.error(message)
+        raise exc.NoHomeworksError
 
     if not isinstance(response, dict):
         message = (
             'Формат ответа - не словарь. Проверьте запрос.')
         logging.error(message)
+        raise exc.ResponseIsNotDictError
 
     if not isinstance(response['homeworks'], list):
         message = (
