@@ -71,6 +71,7 @@ def check_response(response):
         message = (
             'Формат ответа - не словарь. Проверьте запрос.')
         logging.error(message)
+        raise exc.ResponseIsNotDictError
 
     if not isinstance(response['homeworks'], list):
         message = (
@@ -107,11 +108,13 @@ def main():
 
         bot = telegram.Bot(token=TELEGRAM_TOKEN)
         current_timestamp = int(time.time())
-        current_homework_status = ''
         while True:
             try:
+                logging.debug('Вошли в try. Отправляю запрос')
                 response = get_api_answer(current_timestamp)
+                logging.debug(f'Время запроса {current_timestamp}')
                 current_timestamp = response.get('current_date')
+                logging.debug(f'Время следующего запроса {current_timestamp}')
                 homeworks = check_response(response)
             except Exception as error:
                 message = f'Сбой в работе программы: {error}'
@@ -121,16 +124,11 @@ def main():
             else:
                 if homeworks:
                     homework = homeworks[0]
-                    if current_homework_status != homework.get('status'):
-                        current_homework_status = homework.get('status')
-                        message = parse_status(homework)
-                        send_message(bot, message)
-                    else:
-                        message = 'Статус проверки не изменен'
-                        logging.debug(message)
+                    message = parse_status(homework)
+                    send_message(bot, message)
                 else:
-                    message = 'Список проектов пуст. Не забыл запушить проект?'
-                    logging.info(message)
+                    message = 'Статус проверки не изменен'
+                    logging.debug(message)
                 time.sleep(RETRY_TIME)
 
     else:
@@ -151,6 +149,5 @@ def main():
         raise exc.MissingTokenError
 
 
-# Вызов только если из файла
 if __name__ == '__main__':
     main()
