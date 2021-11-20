@@ -151,5 +151,6 @@ def main():
         raise exc.MissingTokenError
 
 
+# Вызов только если из файла
 if __name__ == '__main__':
     main()
