@@ -89,7 +89,7 @@ def parse_status(homework):
     if (homework_status not in HOMEWORK_STATUSES
         ) or (homework_name is None
               ) or (homework_status is None):
-        message = 'Неизвестный статус домашней работы'
+        message = 'Статус домашней работы не определен.'
         logging.error(message)
     verdict = HOMEWORK_STATUSES[homework_status]
     return f'Изменился статус проверки работы "{homework_name}". {verdict}'
